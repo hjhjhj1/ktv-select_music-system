@@ -30,12 +30,7 @@
                 <el-form-item label="Password" prop="password">
                     <el-input type="password" @keypress.enter.native="submitForm('loginForm')" show-password v-model="loginForm.password" placeholder="请输入密码"></el-input>
                 </el-form-item>
-                <el-form-item label="Security Code" prop="inputCaptcha">
-                    <div class="yzm">
-                        <el-input style="width:150px;" v-model="inputCaptcha" placeholder="验证码"></el-input>
-                        <img width="80" style="background:#EEE9E9;margin-left:30px;" ref="captcha" height="32" src="http://localhost:8633/api/safecode" @click="refreshCaptcha">
-                    </div>
-                </el-form-item>
+
                 <el-form-item>
                     <el-button class="login-btn" type="primary" @click="submitForm('loginForm')">Sign in</el-button>
                 </el-form-item>
@@ -67,13 +62,7 @@ export default {
   },
     name:"login",
     data(){
-        const validateCaptcha = (rule, value, callback) => {
-            if(!this.inputCaptcha.trim().length){
-                callback(new Error('请输入验证码~'));
-            }else{
-                callback();
-            }
-        }
+
         return{
             inline:true,
             inlinemessage:false,
@@ -90,11 +79,9 @@ export default {
                     {required:true,message:"密码不能为空",trigger:"blur"},
                     {min:6,max:20,message:"密码长度在6-20之间",trigger:"blur"}
                 ],
-                inputCaptcha:[
-                    {required:true, validator:validateCaptcha,trigger:"blur"}
-                ]
+
             },
-            inputCaptcha:"",
+
         currentTabIndex: 0
         }
     },
@@ -105,37 +92,24 @@ export default {
                 if(valid){
                     wsmLoading.start("正在登录,请稍候...")
                     setTimeout(() => {
-                        if(this.inputCaptcha.toLowerCase() == this.getCookie("captcha")){
-                            this.$axios.post("http://localhost:8633/api/admin/account/login", this.loginForm)
-                                .then(res => {
-                                    if(res){
-                                        // 解析token
-                                        const {token} = res.data;
-                                        localStorage.setItem("adminToken", token);
-                                        const decoded = jwt_decode(token);
-                                        // 存储vuex中
-                                        this.$store.dispatch("setAdminInfo", decoded);
-                                        this.$store.dispatch("isAdminAuthorization", true);
-                                        this.$Message.success(`${decoded.username}登录成功`)
-                                        wsmLoading.end();
-                                        this.$router.push("/");
-                                    }
-                                })
-                                .catch(error => {
-                                    console.error(error.response);
-                                    this.refreshCaptcha();
-                                })
-                        }else{
-                            wsmLoading.end();
-                            this.$Modal.confirm({
-                                title:"错误",
-                                content:"你输入的验证码有误,请重新输入验证码~",
-                                type:"error",
-                                onOk:()=>{
-                                    // this.refreshCaptcha();
+                        this.$axios.post("http://localhost:8633/api/admin/account/login", this.loginForm)
+                            .then(res => {
+                                if(res){
+                                    // 解析token
+                                    const {token} = res.data;
+                                    localStorage.setItem("adminToken", token);
+                                    const decoded = jwt_decode(token);
+                                    // 存储vuex中
+                                    this.$store.dispatch("setAdminInfo", decoded);
+                                    this.$store.dispatch("isAdminAuthorization", true);
+                                    this.$Message.success(`${decoded.username}登录成功`)
+                                    wsmLoading.end();
+                                    this.$router.push("/");
                                 }
                             })
-                        }
+                            .catch(error => {
+                                console.error(error.response);
+                            })
                     }, 900)
                 }
             })
@@ -264,26 +238,7 @@ export default {
                     background-color: rgb(94, 255, 132);
                 }
 
-                // 验证码区域
-                .yzm {
-                    display: flex;
-                    align-content: center;
-                    input {
-                        width: 160px;
-                        height: 32px;
-                        outline: none;
-                        border: 1px solid #eee;
-                        padding: 2px 15px;
-                        border-radius: 5px;
-                        font-size: 13px;
-                    }
-                    ::-webkit-input-placeholder {
-                        color: #bbb;
-                    }
-                    img:hover {
-                        cursor: pointer;
-                    }
-                }
+
             }
         }
     }
