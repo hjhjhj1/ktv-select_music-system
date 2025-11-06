@@ -4,7 +4,26 @@
             后台管理系统
         </div>
         <div class="form-box">
-            <el-form class="login-form" label-position="top" size="small" :inline-message="inlinemessage" :model="loginForm" :rules="loginRule" ref="loginForm" label-width="100px">
+            <!-- TabBar组件 -->
+            <TabBar
+                :tabs="['常见问题', '联系客服']"
+                :on-change="handleTabChange"
+                :initial-index="0"
+                :container-style="{
+                    width: '300px',
+                    margin: '0 auto',
+                    backgroundColor: 'rgba(255, 255, 255,.9)',
+                    border: '1px solid #cdcdcd',
+                    borderBottom: 'none',
+                    borderTopLeftRadius: '5px',
+                    borderTopRightRadius: '5px'
+                }"
+            />
+            <!-- 内容区域 -->
+            <div class="tab-content">
+                <!-- 登录表单 -->
+                <div v-if="currentTabIndex === 0" class="form-container">
+                    <el-form class="login-form" label-position="top" size="small" :inline-message="inlinemessage" :model="loginForm" :rules="loginRule" ref="loginForm" label-width="100px">
                 <el-form-item label="Email address" prop="email">
                     <el-input type="text" v-model="loginForm.email" placeholder="请输入邮箱"></el-input>
                 </el-form-item>
@@ -20,14 +39,32 @@
                 <el-form-item>
                     <el-button class="login-btn" type="primary" @click="submitForm('loginForm')">Sign in</el-button>
                 </el-form-item>
-            </el-form>
+                    </el-form>
+                </div>
+                <!-- 联系客服 -->
+                <div v-else-if="currentTabIndex === 1" class="contact-container">
+                    <div class="contact-content">
+                        <h3>联系客服</h3>
+                        <p>如果您在使用过程中遇到任何问题，请通过以下方式联系我们：</p>
+                        <ul>
+                            <li>客服热线：400-123-4567</li>
+                            <li>客服邮箱：support@ktv.com</li>
+                            <li>工作时间：周一至周日 9:00-21:00</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 <script>
 import wsmLoading from "@/plugins/wsmLoading"
 import jwt_decode from 'jwt-decode';
+import TabBar from '@/components/TabBar.vue';
 export default {
+  components: {
+    TabBar
+  },
     name:"login",
     data(){
         const validateCaptcha = (rule, value, callback) => {
@@ -57,7 +94,8 @@ export default {
                     {required:true, validator:validateCaptcha,trigger:"blur"}
                 ]
             },
-            inputCaptcha:""
+            inputCaptcha:"",
+        currentTabIndex: 0
         }
     },
     methods:{
@@ -116,23 +154,27 @@ export default {
         refreshCaptcha(){
             this.$refs.captcha.src = "http://localhost:8633/api/safecode?d=" + Math.random();
         },
+        // 切换Tab
+        handleTabChange(index) {
+            this.currentTabIndex = index;
+        }
     }
 }
 </script>
 <style lang="less" scoped>
-.login{
+.login {
     width: 100%;
     height: 100%;
     cursor: default;
     padding: 40px 0px;
-    color:red;
+    color: red;
     background-image: url(../assets/image/login-bg.jpg);
     background-size: 100% 100%;
     display: flex;
     flex-direction: column;
 
-    .login-title{
-        width:100%;
+    .login-title {
+        width: 100%;
         height: 150px;
         line-height: 150px;
         text-align: center;
@@ -142,50 +184,108 @@ export default {
     }
 
     // 表单
-    .form-box{
+    .form-box {
         width: 100%;
         // min-width: 500px;
 
-        .login-form{
+        .login-form {
+            width: 100%;
+        }
+
+        .form-container {
             width: 300px;
             margin: 0px auto;
-            background-color: rgba(255, 255, 255,.9);
+            background-color: rgba(255, 255, 255, .9);
             border: 1px solid #cdcdcd;
+            border-top: none;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
             padding: 10px 15px;
-            border-radius: 5px;
-
-            .login-btn{
-                width: 100%;
-                background: linear-gradient(to bottom, rgba(47, 228, 89, 0.9),#26a744);
-                font-weight: 600;
-            }
-            .login-btn:hover{
-                background-color: rgb(94, 255, 132);
-            }
-
-
-            // 验证码区域
-            .yzm{
-                display:flex;
-                align-content:center;
-                input{
-                    width: 160px;
-                    height: 32px;
-                    outline: none;
-                    border: 1px solid #eee;
-                    padding: 2px 15px;
-                    border-radius: 5px;
-                    font-size: 13px;
-                }
-                ::-webkit-input-placeholder{
-                    color:#bbb;
-                }
-                img:hover{
-                    cursor: pointer;
-                }
-            }
-
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
         }
-    } 
+
+        .contact-container {
+            width: 300px;
+            margin: 0px auto;
+            background-color: rgba(255, 255, 255, .9);
+            border: 1px solid #cdcdcd;
+            border-top: none;
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            padding: 10px 15px;
+            border-bottom-left-radius: 5px;
+            border-bottom-right-radius: 5px;
+            min-height: 250px;
+
+            .contact-content {
+                h3 {
+                    margin-top: 10px;
+                    color: #333;
+                    text-align: center;
+                }
+
+                p {
+                    color: #666;
+                    margin: 15px 0;
+                }
+
+                ul {
+                    list-style: none;
+                    padding: 0;
+
+                    li {
+                        color: #666;
+                        margin: 10px 0;
+                        padding-left: 20px;
+                        position: relative;
+
+                        &:before {
+                            content: "•";
+                            position: absolute;
+                            left: 0;
+                            color: #1890ff;
+                        }
+                    }
+                }
+            }
+        }
+
+        .form-container {
+            .login-form {
+                width: 100%;
+
+                .login-btn {
+                    width: 100%;
+                    background: linear-gradient(to bottom, rgba(47, 228, 89, 0.9), #26a744);
+                    font-weight: 600;
+                }
+                .login-btn:hover {
+                    background-color: rgb(94, 255, 132);
+                }
+
+                // 验证码区域
+                .yzm {
+                    display: flex;
+                    align-content: center;
+                    input {
+                        width: 160px;
+                        height: 32px;
+                        outline: none;
+                        border: 1px solid #eee;
+                        padding: 2px 15px;
+                        border-radius: 5px;
+                        font-size: 13px;
+                    }
+                    ::-webkit-input-placeholder {
+                        color: #bbb;
+                    }
+                    img:hover {
+                        cursor: pointer;
+                    }
+                }
+            }
+        }
+    }
 }
 </style>
