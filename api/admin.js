@@ -1,14 +1,14 @@
-/** 
+/**
 *
-*  @author: Mr_Wei 
-*  @version: 1.0.0 
+*  @author: Mr_Wei
+*  @version: 1.0.0
 *  @description: 管理员管理歌曲
 *  @Date: 2019/10/13 23:05
 *
-*/ 
+*/
 
 const router = require("express").Router();
-const bcrypt = require("bcrypt"); // 加密解密
+const bcrypt = require("bcryptjs"); // 加密解密
 const jwt = require("jsonwebtoken");
 const jwt_key = require("../secret/jwtkey").KEYORSECRET;
 const passport = require("passport");
@@ -89,7 +89,7 @@ router.post("/music/add", passport.authenticate("jwt", {session:false}), (req, r
                         .then(() => {
                             res.json({status:"200", result:"添加成功"})
                             delNoUse.delAll();
-                            
+
                         }).catch(err => {
                             console.log(err);
                             res.status(500).json({status:"500", result:"未知错误,添加失败"})
@@ -222,7 +222,7 @@ router.post("/adminlike/search", passport.authenticate("jwt", {session:false}), 
 })
 
 // 创建ktv账号和密码
-router.post("/account/new", passport.authenticate("jwt", {session:false}), async(req, res) => { 
+router.post("/account/new", passport.authenticate("jwt", {session:false}), async(req, res) => {
     const orderInfo = {
         account:newAccount(req.body.order_id).account,
         password:newAccount(req.body.order_id).password,
@@ -320,7 +320,7 @@ router.post("/account/login", (req, res) => {
                         username:admin.username,
                         date:admin.date,
                         identity:admin.identity
-                    };  
+                    };
                     // 签证
                     jwt.sign(rule, jwt_key, {expiresIn:36000}, (err, token) => {
                         if(err){

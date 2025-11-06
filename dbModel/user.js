@@ -6,7 +6,7 @@
 *  @Date: 2019/10/17 10:45
 *
 */ 
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 
 const userModel = mongoose.Schema({

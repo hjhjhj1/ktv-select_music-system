@@ -1,11 +1,11 @@
-/** 
+/**
 *
-*  @author: Mr_Wei 
-*  @version: 1.0.0 
+*  @author: Mr_Wei
+*  @version: 1.0.0
 *  @description: 判断是否过期用户
 *  @Date: 2019/10/19 12:19
 *
-*/ 
+*/
 const UserOrOrders = require("../dbModel/user");
 module.exports = async params => {
     let flag = false;
@@ -29,5 +29,5 @@ module.exports = async params => {
         console.error(error)
         return flag;
     }
-    
+
 }
