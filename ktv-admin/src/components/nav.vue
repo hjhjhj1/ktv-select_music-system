@@ -1,31 +1,29 @@
 <template>
     <div class="wsmnav">
-        <Row>
-            <Menu mode="horizontal" :theme="theme">
-                <Col :span="7">
-                    <div class="nav-logo">后台管理系统</div>
-                </Col>
-                <Col :span="13">
-                    <div class="current-time">{{nowTime}}</div>
-                </Col>
-                <MenuItem class="opera-btn" name="1">
-                    <Dropdown trigger="click">
-                        <a href="javascript:void(0)">
-                            <Avatar :src="avatar" />
-                            <Icon type="ios-arrow-down" style="margin-left:5px;color:#bbb;"></Icon>
-                        </a>
-                        <DropdownMenu slot="list">
-                            <DropdownItem @click.native="goIndex">你好,{{adminInfo.username}}</DropdownItem>
-                            <DropdownItem @click.native="goManageMusic">歌曲管理</DropdownItem>
-                            <DropdownItem @click.native="goAdminLikes">推荐歌曲</DropdownItem>
-                            <DropdownItem @click.native="goUser_service">开机服务</DropdownItem>
-                            <DropdownItem @click.native="allorders">订单查询</DropdownItem>
-                            <DropdownItem @click.native="logout">退出登录</DropdownItem>
-                        </DropdownMenu>
-                    </Dropdown>
-                </MenuItem>
-            </Menu>
-        </Row>
+        <Menu mode="horizontal" :theme="theme">
+            <MenuItem name="logo">
+                <div class="nav-logo">后台管理系统</div>
+            </MenuItem>
+            <MenuItem name="time">
+                <div class="current-time">{{nowTime}}</div>
+            </MenuItem>
+            <MenuItem class="opera-btn" name="user">
+                <Dropdown trigger="click">
+                    <a href="javascript:void(0)">
+                        <Avatar :src="avatar" />
+                        <Icon type="ios-arrow-down" style="margin-left:5px;color:#bbb;"></Icon>
+                    </a>
+                    <DropdownMenu slot="list">
+                        <DropdownItem @click.native="goIndex">你好,{{adminInfo.username}}</DropdownItem>
+                        <DropdownItem @click.native="goManageMusic">歌曲管理</DropdownItem>
+                        <DropdownItem @click.native="goAdminLikes">推荐歌曲</DropdownItem>
+                        <DropdownItem @click.native="goUser_service">开机服务</DropdownItem>
+                        <DropdownItem @click.native="allorders">订单查询</DropdownItem>
+                        <DropdownItem @click.native="logout">退出登录</DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+            </MenuItem>
+        </Menu>
     </div>
 </template>
 <script>
