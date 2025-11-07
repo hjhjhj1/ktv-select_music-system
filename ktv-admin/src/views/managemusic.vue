@@ -93,23 +93,23 @@
                     fixed="right"
                     min-width="150">
                     <template slot-scope='scope'>
-                        <el-button 
+                        <el-button
                             type="warning"
                             size="small"
                             circle
                             icon="el-icon-star-off"
                             @click='likeSongs(scope.row)'
                         ></el-button>
-                        <el-button 
-                            type="primary" 
-                            icon="el-icon-edit" 
+                        <el-button
+                            type="primary"
+                            icon="el-icon-edit"
                             size="small"
                             circle
                             @click='onEditSong(scope.row)'
                         ></el-button>
-                        <el-button 
-                            type="danger" 
-                            icon='el-icon-delete' 
+                        <el-button
+                            type="danger"
+                            icon='el-icon-delete'
                             size="small"
                             circle
                             @click='onDeleteSong(scope.row,scope.$index)'
@@ -135,18 +135,18 @@
         </Row>
 
         <!-- 添加歌曲 -->
-        <el-dialog 
-            :title="addDialog.title" 
+        <el-dialog
+            :title="addDialog.title"
             :visible.sync="addDialog.show"
             :close-on-click-modal='false'
             :close-on-press-escape='false'
             :modal-append-to-body="false">
             <div class="form">
-                <el-form 
-                    ref="addForm" 
+                <el-form
+                    ref="addForm"
                     :model="addForm"
                     :rules="addForm_rules"
-                    label-width="120px" 
+                    label-width="120px"
                     style="margin:10px;width:auto;">
                     <el-form-item prop='songName' label="歌曲名:">
                         <el-input type="songName" v-model="addForm.songName"></el-input>
@@ -155,12 +155,23 @@
                         <el-input type="artist" v-model="addForm.artist"></el-input>
                     </el-form-item>
                     <el-form-item prop='src' label="歌曲地址:">
-                        <Upload action="http://localhost:8633/api/admin/upload/music"
-                            :on-success="handleAddSongSuccess"
-                            ref="uploadmusic"
-                            :format="['mp3']">
-                            <Button icon="ios-cloud-upload-outline" @click.native="clearFiles">上传歌曲</Button>
-                        </Upload>
+                        <div>
+                            <Upload action="http://localhost:8633/api/admin/upload/music"
+                                :on-success="handleAddSongSuccess"
+                                ref="uploadmusic"
+                                :format="['mp3']"
+                                :show-upload-list="false"
+                                :on-error="handleUploadError"
+                                :before-upload="beforeUploadSong">
+                                <Button type="primary" icon="ios-cloud-upload-outline">上传歌曲</Button>
+                            </Upload>
+                            <div v-if="uploadedFileName" class="uploaded-file-info" style="margin-top:8px;">
+                                <span class="text-success">已上传: {{ uploadedFileName }}</span>
+                                <Button type="text" size="small" @click="clearUploadedFile" style="margin-left:10px;">
+                                    移除
+                                </Button>
+                            </div>
+                        </div>
                     </el-form-item>
                     <el-form-item label="歌曲封面:" prop="poster">
                         <Upload
@@ -196,18 +207,18 @@
         </el-dialog>
 
         <!-- 编辑歌曲 -->
-        <el-dialog 
-            :title="editDialog.title" 
+        <el-dialog
+            :title="editDialog.title"
             :visible.sync="editDialog.show"
             :close-on-click-modal='false'
             :close-on-press-escape='false'
             :modal-append-to-body="false">
             <div class="form">
-                <el-form 
-                    ref="editForm" 
+                <el-form
+                    ref="editForm"
                     :model="editForm"
                     :rules="addForm_rules"
-                    label-width="120px" 
+                    label-width="120px"
                     style="margin:10px;width:auto;">
                     <el-form-item prop='_id' label="歌曲ID:">
                         <el-input type="id" disabled v-model="editForm._id"></el-input>
@@ -339,20 +350,21 @@ import wsmLoading from "@/plugins/wsmLoading"
 import $ from "jquery";
 export default {
     name:"managemusic",
-    data(){
-        return{
-            isfirst:false,
-            firstEdit:true,
-            isCheckPassword:false,
-            inputPassword:"",
-            searchName:"",
-            flag:"",  // 用来判断是 添加, 编辑或删除
-            noChangeSongs:[],
-            toListen:false,
-            toListenSrc:"",
-            toListenPoster:"",
-            allSongs:[],
-            allTableData:[],
+    data() {
+        return {
+            isfirst: true,
+            firstEdit: true,
+            isCheckPassword: false,
+            inputPassword: "",
+            searchName: "",
+            flag: "",  // 用来判断是 添加, 编辑或删除
+            noChangeSongs: [],
+            toListen: false,
+            toListenSrc: "",
+            toListenPoster: "",
+            allSongs: [],
+            allTableData: [],
+            uploadedFileName: '',
             paginations: {  // 分页属性
                 page_index: 1, // 当前位于哪页
                 total: 0, // 总数
@@ -386,7 +398,7 @@ export default {
                 language:"",
                 style:""
             },
-            addForm_rules: {  // 添加或者编辑歌曲规则 
+            addForm_rules: {  // 添加或者编辑歌曲规则
                 songName: [
                     { required: true, message: "歌曲名不能为空"}
                 ],
@@ -499,7 +511,7 @@ export default {
                 this.delRow = song;
             }).catch(() => {
             })
-            
+
         },
         okEditBtn(formName){
             this.$refs[formName].validate(valid => {
@@ -572,6 +584,28 @@ export default {
         handleAddSongSuccess(res){
             console.log(res)
             this.addForm.src = res.result.src;
+            // 设置上传的文件名回显
+            if (res.result.filename) {
+                this.uploadedFileName = res.result.filename;
+            } else {
+                // 如果没有文件名，从src中提取
+                const srcParts = res.result.src.split('/');
+                this.uploadedFileName = srcParts[srcParts.length - 1];
+            }
+        },
+        // 上传前验证文件类型
+        beforeUploadSong(file) {
+            const isMp3 = file.type === 'audio/mpeg' || file.name.endsWith('.mp3');
+            if (!isMp3) {
+                this.$Message.error('只能上传MP3格式的音频文件!');
+                return false;
+            }
+            return true;
+        },
+        // 上传错误处理
+        handleUploadError(error) {
+            this.$Message.error('文件上传失败，请重试!');
+            console.error('Upload error:', error);
         },
         // 成功添加歌曲海报回调
         handleAddPosterSuccess(res){
@@ -585,7 +619,17 @@ export default {
             }
             if(this.isfirst == true){
                 this.$refs.uploadmusic.clearFiles();
+                this.uploadedFileName = '';
             }
+        },
+        // 清除已上传的文件信息
+        clearUploadedFile() {
+            this.uploadedFileName = '';
+            this.addForm.src = '';
+            if (this.$refs.uploadmusic) {
+                this.$refs.uploadmusic.clearFiles();
+            }
+            this.$Message.success('已移除上传文件');
         },
         listenMusic(song){
             this.toListenSrc = `http://localhost:8633/api/music/nowmusic?id=${song._id}`
@@ -664,7 +708,7 @@ export default {
     width: 100%;
     height: 100%;
     padding: 20px 60px;
-    
+
 
     .listen-poster{
         cursor: pointer;
